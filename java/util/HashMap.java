@@ -36,7 +36,15 @@ import java.io.*;
  * Key object ‘s equals() method is used to ensure uniqueness of key object
  * Value object  ‘s equals() and hashcode() method is not used at all
  *
- * @author fengtan.zhang
+ *
+ * 数据结构： 数组加链表(数组的每一项是一个链表)
+ * https://zhangshixi.iteye.com/blog/672697
+ *
+ *
+ * 什么是hash碰撞：计算到的hash值相同，需要放到同一个bucket中
+ * hash碰撞带来的问题：同一个桶的链表会很长，那么get()方法的开销就会越来越大
+ * HashMap采用链表法解决hash碰撞(另还有开放地址法)
+ * TODO 1.8做了优化，有时间研究
  */
 
 public class HashMap<K,V>
@@ -46,6 +54,9 @@ public class HashMap<K,V>
 
     /**
      * The default initial capacity - MUST be a power of two.
+     *
+     * 1 << 4
+     * 0000 0001  --> 0001 0000(1 * 2的4次 = 16)
      */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
@@ -68,6 +79,7 @@ public class HashMap<K,V>
 
     /**
      * The table, resized as necessary. Length MUST Always be a power of two.
+     * 长度总是2的n次方
      */
     transient Entry<K,V>[] table = (Entry<K,V>[]) EMPTY_TABLE;
 
@@ -80,6 +92,7 @@ public class HashMap<K,V>
      * The next size value at which to resize (capacity * load factor).
      * @serial
      * 下次扩容阈值  capacity * load factor
+     *  eg: 16 * 0.75 = 12
      */
     // If table == EMPTY_TABLE then this is the initial capacity at which the
     // table will be created when inflated.
@@ -116,7 +129,6 @@ public class HashMap<K,V>
     /**
      * holds values which can't be initialized until after VM is booted（启动）.
      */
-    @SuppressWarnings("all") //fengtan.zhang
     private static class Holder {
 
         /**
@@ -297,6 +309,7 @@ public class HashMap<K,V>
      * Returns index for hash code h.
      */
     static int indexFor(int h, int length) {
+        // 当数组长度为2的n次幂的时候，不同的key算得得index相同的几率较小，那么数据在数组上分布就比较均匀，也就是说碰撞的几率小，相对的，查询的时候就不用遍历某个位置上的链表，这样查询效率也就较高了
         // assert Integer.bitCount(length) == 1 : "length must be a non-zero power of 2";
         return h & (length-1);
     }
@@ -413,6 +426,7 @@ public class HashMap<K,V>
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
      */
     public V put(K key, V value) {
+        // table 为空则进行扩容
         if (table == EMPTY_TABLE) {
             inflateTable(threshold);
         }
@@ -548,6 +562,7 @@ public class HashMap<K,V>
                     e.hash = null == e.key ? 0 : hash(e.key);
                 }
                 //Recalculate the index based on the new array length
+                // 重新计算索引，很耗性能
                 int i = indexFor(e.hash, newCapacity);
                 //
                 e.next = newTable[i];
@@ -837,6 +852,7 @@ public class HashMap<K,V>
      */
     void addEntry(int hash, K key, V value, int bucketIndex) {
         if ((size >= threshold) && (null != table[bucketIndex])) {
+            // 数组大小超过 capacity * loadFactor时进行扩容. 容量变为之前的两倍
             resize(2 * table.length);
             hash = (null != key) ? hash(key) : 0;
             bucketIndex = indexFor(hash, table.length);
@@ -855,7 +871,9 @@ public class HashMap<K,V>
      * clone, and readObject.
      */
     void createEntry(int hash, K key, V value, int bucketIndex) {
+        // 获取指定索引处的Entry
         Entry<K,V> e = table[bucketIndex];
+        // 新创建的Entry放入bucketIndex处，并且next = e
         table[bucketIndex] = new Entry<>(hash, key, value, e);
         size++;
     }
