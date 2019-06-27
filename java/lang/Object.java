@@ -29,7 +29,7 @@ package java.lang;
  * Class {@code Object} is the root of the class hierarchy.
  * Every class has {@code Object} as a superclass. All objects,
  * including arrays, implement the methods of this class.
- *
+ * Object类是所有java类的父类
  * @author  unascribed
  * @see     java.lang.Class
  * @since   JDK1.0
@@ -43,6 +43,7 @@ public class Object {
 
     /**
      * Returns the runtime class of this {@code Object}. The returned
+     * 返回该对象的运行时类
      * {@code Class} object is the object that is locked by {@code
      * static synchronized} methods of the represented class.
      *
@@ -135,10 +136,17 @@ public class Object {
      * if {@code x} and {@code y} refer to the same object
      * ({@code x == y} has the value {@code true}).
      * <p>
+     *
+     * Object类的equals方法比较的仅仅是两个对象的地址。子类可以根据自己的需要重写equals方法，
+     * 比如 {@link String#equals(Object)}. {@link Integer#equals(Object)}.
+     *
      * Note that it is generally necessary to override the {@code hashCode}
      * method whenever this method is overridden, so as to maintain the
      * general contract for the {@code hashCode} method, which states
      * that equal objects must have equal hash codes.
+     *
+     * 重写equals方法的同时也必须重写hashCode方法，因为两个对象如果相等，则一定有相等的hash code，但是反之则不然，
+     * hash code相等，两个对象不一定equals
      *
      * @param   obj   the reference object with which to compare.
      * @return  {@code true} if this object is the same as the obj
@@ -173,6 +181,7 @@ public class Object {
      * {@code Object}) obey this convention, it will be the case that
      * {@code x.clone().getClass() == x.getClass()}.
      * <p>
+     *     重写clone方法时，首先需要调用 super.clone()
      * By convention, the object returned by this method should be independent
      * of this object (which is being cloned).  To achieve this independence,
      * it may be necessary to modify one or more fields of the object returned
@@ -190,13 +199,18 @@ public class Object {
      * {@code CloneNotSupportedException} is thrown. Note that all arrays
      * are considered to implement the interface {@code Cloneable} and that
      * the return type of the {@code clone} method of an array type {@code T[]}
-     * is {@code T[]} where T is any reference or primitive type.
+     * is {@code T[]} where T is any reference or primitive type(基本类型).
      * Otherwise, this method creates a new instance of the class of this
      * object and initializes all its fields with exactly the contents of
      * the corresponding fields of this object, as if by assignment; the
      * contents of the fields are not themselves cloned. Thus, this method
      * performs a "shallow copy" of this object, not a "deep copy" operation.
      * <p>
+     *  1. 数组视为自动实现了Cloneable接口
+     *  2. 非数组类型，需要实现Cloneable接口，否则会 CloneNotSupportedException
+     *  3. 非数组类型，调用本方法，会新创建该类的新实例，并将被克隆对象实例的状态复制给新创建的对象，注意该方法是一个浅拷贝，不是一个深拷贝
+     *  4. shallow copy, deep copy 参考 https://www.cnblogs.com/shakinghead/p/7651502.html
+     *
      * The class {@code Object} does not itself implement the interface
      * {@code Cloneable}, so calling the {@code clone} method on an object
      * whose class is {@code Object} will result in throwing an
@@ -219,6 +233,7 @@ public class Object {
      * be a concise but informative representation that is easy for a
      * person to read.
      * It is recommended that all subclasses override this method.
+     * 建议所有的子类都重写该方法
      * <p>
      * The {@code toString} method for class {@code Object}
      * returns a string consisting of the name of the class of which the
@@ -506,6 +521,7 @@ public class Object {
     /**
      * Called by the garbage collector on an object when garbage collection
      * determines that there are no more references to the object.
+     * 当GC决定没有引用指向该对象的时候，就会调用该方法
      * A subclass overrides the {@code finalize} method to dispose of
      * system resources or to perform other cleanup.
      * <p>
