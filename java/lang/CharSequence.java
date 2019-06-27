@@ -28,6 +28,7 @@ package java.lang;
 
 /**
  * A <tt>CharSequence</tt> is a readable sequence of <code>char</code> values. This
+ * 一个可读的字符序列
  * interface provides uniform, read-only access to many different kinds of
  * <code>char</code> sequences.
  * A <code>char</code> value represents a character in the <i>Basic
@@ -53,6 +54,7 @@ public interface CharSequence {
 
     /**
      * Returns the length of this character sequence.  The length is the number
+     * 字符序列的长度
      * of 16-bit <code>char</code>s in the sequence.</p>
      *
      * @return  the number of <code>char</code>s in this sequence
@@ -61,6 +63,7 @@ public interface CharSequence {
 
     /**
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero
+     * 返回指定索引处的字符
      * to <tt>length() - 1</tt>.  The first <code>char</code> value of the sequence is at
      * index zero, the next at index one, and so on, as for array
      * indexing. </p>
@@ -81,6 +84,7 @@ public interface CharSequence {
 
     /**
      * Returns a new <code>CharSequence</code> that is a subsequence of this sequence.
+     * 返回该序列的一个子序列
      * The subsequence starts with the <code>char</code> value at the specified index and
      * ends with the <code>char</code> value at index <tt>end - 1</tt>.  The length
      * (in <code>char</code>s) of the

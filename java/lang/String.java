@@ -108,6 +108,7 @@ import java.util.regex.PatternSyntaxException;
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence {
     /** The value is used for character storage. */
+    // final修饰
     private final char value[];
 
     /** Cache the hash code for the string */
@@ -972,12 +973,14 @@ public final class String
      * @see  #equalsIgnoreCase(String)
      */
     public boolean equals(Object anObject) {
+        // 如果 == 直接返回true
         if (this == anObject) {
             return true;
         }
         if (anObject instanceof String) {
             String anotherString = (String) anObject;
             int n = value.length;
+            // 先判断长度
             if (n == anotherString.value.length) {
                 char v1[] = value;
                 char v2[] = anotherString.value;
@@ -2171,7 +2174,7 @@ public final class String
      *
      * @param  target The sequence of char values to be replaced
      * @param  replacement The replacement sequence of char values
-     * @return  The resulting string
+     * @return  The resulting string (注意处理返回值)
      * @throws NullPointerException if <code>target</code> or
      *         <code>replacement</code> is <code>null</code>.
      * @since 1.5
