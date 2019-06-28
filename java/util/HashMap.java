@@ -55,8 +55,13 @@ public class HashMap<K,V>
     /**
      * The default initial capacity - MUST be a power of two.
      *
+     * << 左移运算符  左移一位相当与乘2，n位相当于2的n次方
+     * >> 右移运算符  右移一位相当于除2，右移n位相当于除以2的n次方。这里是取商哈，余数就不要了
+     * >>> 无符号右移
      * 1 << 4
+     *
      * 0000 0001  --> 0001 0000(1 * 2的4次 = 16)
+     * 为什么不直接写16？  大概是想让用户知道table长度必须是2的倍数
      */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
@@ -287,6 +292,13 @@ public class HashMap<K,V>
      * critical because HashMap uses power-of-two length hash tables, that
      * otherwise encounter collisions for hashCodes that do not differ
      * in lower bits. Note: Null keys always map to hash 0, thus index 0.
+     *
+     * ^ 位异或  0^0=0 1^0=1 0^1=1 1^1=0
+     * & 与运算 1&1=1 其余都为零
+     * | 或运算 0|0=0 1|0=1 0|1=1 1|1=1
+     * ~ 非运算 ~1=0 ~0=1
+     *
+     * >>> 无符号右移
      */
     //hash function is redistributing elements in hashmap thus less collisions and better performance.(减少冲突)
     final int hash(Object k) {
@@ -301,6 +313,7 @@ public class HashMap<K,V>
         // constant multiples at each bit position have a bounded
         // number of collisions (approximately 8 at default load factor).
         //二次hash
+        // 四次扰动函数,目的在于降低碰撞的概率
         h ^= (h >>> 20) ^ (h >>> 12);
         return h ^ (h >>> 7) ^ (h >>> 4);
     }
@@ -311,6 +324,7 @@ public class HashMap<K,V>
     static int indexFor(int h, int length) {
         // 当数组长度为2的n次幂的时候，不同的key算得得index相同的几率较小，那么数据在数组上分布就比较均匀，也就是说碰撞的几率小，相对的，查询的时候就不用遍历某个位置上的链表，这样查询效率也就较高了
         // assert Integer.bitCount(length) == 1 : "length must be a non-zero power of 2";
+        // 当length为2的倍数的时候， x % length = x & (length -1)
         return h & (length-1);
     }
 
