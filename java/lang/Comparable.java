@@ -31,6 +31,7 @@ import java.util.*;
  * implements it.  This ordering is referred to as the class's <i>natural
  * ordering</i>, and the class's <tt>compareTo</tt> method is referred to as
  * its <i>natural comparison method</i>.<p>
+ *     这种排序被称为类的自然排序， compareTo称为类的自然比较方法
  *
  * Lists (and arrays) of objects that implement this interface can be sorted
  * automatically by {@link Collections#sort(List) Collections.sort} (and
@@ -38,7 +39,10 @@ import java.util.*;
  * interface can be used as keys in a {@linkplain SortedMap sorted map} or as
  * elements in a {@linkplain SortedSet sorted set}, without the need to
  * specify a {@linkplain Comparator comparator}.<p>
+ * 实现该接口的对象列表(和数组)可通过{@link Collections#sort(List)}.以及 {@link Arrays#sort(Object[])}. 自动排序
  *
+ *
+ * 自然排序和equals一致性的说明
  * The natural ordering for a class <tt>C</tt> is said to be <i>consistent
  * with equals</i> if and only if <tt>e1.compareTo(e2) == 0</tt> has
  * the same boolean value as <tt>e1.equals(e2)</tt> for every
@@ -46,7 +50,7 @@ import java.util.*;
  * is not an instance of any class, and <tt>e.compareTo(null)</tt> should
  * throw a <tt>NullPointerException</tt> even though <tt>e.equals(null)</tt>
  * returns <tt>false</tt>.<p>
- *
+ * 强烈建议(但不是必须)自然排序和equals保持一致
  * It is strongly recommended (though not required) that natural orderings be
  * consistent with equals.  This is so because sorted sets (and sorted maps)
  * without explicit comparators behave "strangely" when they are used with
@@ -62,6 +66,7 @@ import java.util.*;
  * because <tt>a</tt> and <tt>b</tt> are equivalent from the sorted set's
  * perspective.<p>
  *
+ * 实际上，所有实现 Comparable 的 Java 核心类都具有与 equals 一致的自然排序，除了BigDecimal
  * Virtually all Java core classes that implement <tt>Comparable</tt> have natural
  * orderings that are consistent with equals.  One exception is
  * <tt>java.math.BigDecimal</tt>, whose natural ordering equates
@@ -99,6 +104,7 @@ public interface Comparable<T> {
      * Compares this object with the specified object for order.  Returns a
      * negative integer, zero, or a positive integer as this object is less
      * than, equal to, or greater than the specified object.
+     * 负数代表小于，0代表等于，正数代表大于
      *
      * <p>The implementor must ensure <tt>sgn(x.compareTo(y)) ==
      * -sgn(y.compareTo(x))</tt> for all <tt>x</tt> and <tt>y</tt>.  (This
@@ -117,6 +123,7 @@ public interface Comparable<T> {
      * <tt>(x.compareTo(y)==0) == (x.equals(y))</tt>.  Generally speaking, any
      * class that implements the <tt>Comparable</tt> interface and violates
      * this condition should clearly indicate this fact.  The recommended
+     * 当自然排序与equals不一致的时候，建议显示的阐述这种不一致,就像下边这样:
      * language is "Note: this class has a natural ordering that is
      * inconsistent with equals."
      *
@@ -133,6 +140,7 @@ public interface Comparable<T> {
      * @throws NullPointerException if the specified object is null
      * @throws ClassCastException if the specified object's type prevents it
      *         from being compared to this object.
+     * For example, 例如Integer实现了Comparable接口，{@link Integer#compareTo(Integer)}.
      */
     public int compareTo(T o);
 }
