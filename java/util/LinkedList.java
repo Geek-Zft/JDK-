@@ -31,14 +31,15 @@ package java.util;
  * elements (including {@code null}).
  *
  * <p>All of the operations perform as could be expected for a doubly-linked
- * list.  Operations that index into the list will traverse the list from
+ * list.  Operations that index into the list will traverse(遍历) the list from
  * the beginning or the end, whichever is closer to the specified index.
  *
+ * LikedList是非同步的
  * <p><strong>Note that this implementation is not synchronized.</strong>
  * If multiple threads access a linked list concurrently, and at least
  * one of the threads modifies the list structurally, it <i>must</i> be
  * synchronized externally.  (A structural modification is any operation
- * that adds or deletes one or more elements; merely setting the value of
+ * that adds or deletes one or more elements; merely(仅仅) setting the value of
  * an element is not a structural modification.)  This is typically
  * accomplished by synchronizing on some object that naturally
  * encapsulates the list.
@@ -49,6 +50,7 @@ package java.util;
  * unsynchronized access to the list:<pre>
  *   List list = Collections.synchronizedList(new LinkedList(...));</pre>
  *
+ * fail-fast机制
  * <p>The iterators returned by this class's {@code iterator} and
  * {@code listIterator} methods are <i>fail-fast</i>: if the list is
  * structurally modified at any time after the iterator is created, in
@@ -121,9 +123,13 @@ public class LinkedList<E>
      * Links e as first element.
      */
     private void linkFirst(E e) {
+        // 用变量存储头结点
         final Node<E> f = first;
+        // 新建一个节点，将next指向f
         final Node<E> newNode = new Node<>(null, e, f);
+        // 设置新节点为头结点
         first = newNode;
+        // f == null说明之前的list为空，这里需要将新节点再设置为尾结点,否则就将新节点设为f的前置节点
         if (f == null)
             last = newNode;
         else
@@ -136,12 +142,17 @@ public class LinkedList<E>
      * Links e as last element.
      */
     void linkLast(E e) {
+        // 用变量保存尾结点
         final Node<E> l = last;
+        // 新建节点，将pre指向l
         final Node<E> newNode = new Node<>(l, e, null);
+        // 新节点设为尾结点
         last = newNode;
+        // l == null 说明原先list为空，则同时把newNode也设为头结点
         if (l == null)
             first = newNode;
         else
+            // 否则l的next 指向newNode
             l.next = newNode;
         size++;
         modCount++;
@@ -149,12 +160,14 @@ public class LinkedList<E>
 
     /**
      * Inserts element e before non-null Node succ.
+     *  https://i.loli.net/2019/07/02/5d1ac1bc6048529285.png
      */
     void linkBefore(E e, Node<E> succ) {
         // assert succ != null;
         final Node<E> pred = succ.prev;
         final Node<E> newNode = new Node<>(pred, e, succ);
         succ.prev = newNode;
+        // succ的前置节点为null，说明之前succ是头结点，插入到succ前的节点需要设为头结点
         if (pred == null)
             first = newNode;
         else
@@ -172,6 +185,7 @@ public class LinkedList<E>
         final Node<E> next = f.next;
         f.item = null;
         f.next = null; // help GC
+        // 后一个节点设为头结点
         first = next;
         if (next == null)
             last = null;
@@ -203,6 +217,7 @@ public class LinkedList<E>
 
     /**
      * Unlinks non-null node x.
+     * https://i.loli.net/2019/07/02/5d1ac525bcff582111.png
      */
     E unlink(Node<E> x) {
         // assert x != null;
@@ -331,6 +346,7 @@ public class LinkedList<E>
      *
      * @param e element to be appended to this list
      * @return {@code true} (as specified by {@link Collection#add})
+     * 尾插法
      */
     public boolean add(E e) {
         linkLast(e);
@@ -351,7 +367,9 @@ public class LinkedList<E>
      * @return {@code true} if this list contained the specified element
      */
     public boolean remove(Object o) {
+        // null单独处理，防止null.equals报空指针
         if (o == null) {
+            // 从头结点开始遍历整个链表,找到element为null的结点
             for (Node<E> x = first; x != null; x = x.next) {
                 if (x.item == null) {
                     unlink(x);
@@ -401,22 +419,28 @@ public class LinkedList<E>
      * @throws NullPointerException if the specified collection is null
      */
     public boolean addAll(int index, Collection<? extends E> c) {
+        // 校验index
         checkPositionIndex(index);
 
+        // 集合转化为数组,如果数组为空，直接返回false
         Object[] a = c.toArray();
         int numNew = a.length;
         if (numNew == 0)
             return false;
 
+        // succ指向待添加结点的位置，pred指向待添加结点的前一个结点
         Node<E> pred, succ;
+        // 判断是否插入在链表的最后
         if (index == size) {
             succ = null;
             pred = last;
         } else {
+            // succ指向指定索引处的结点
             succ = node(index);
             pred = succ.prev;
         }
 
+        // 遍历数组
         for (Object o : a) {
             @SuppressWarnings("unchecked") E e = (E) o;
             Node<E> newNode = new Node<>(pred, e, null);
@@ -424,9 +448,11 @@ public class LinkedList<E>
                 first = newNode;
             else
                 pred.next = newNode;
+            // pred指向newNode,这样循环的结果是，在最初的pred后边追加了一个新的链表
             pred = newNode;
         }
 
+        // 尾结点的处理
         if (succ == null) {
             last = pred;
         } else {
@@ -536,6 +562,7 @@ public class LinkedList<E>
      * iterator or an add operation.
      */
     private boolean isPositionIndex(int index) {
+        // 新添加的元素可能在last的后面，所以index允许等于size
         return index >= 0 && index <= size;
     }
 
@@ -564,6 +591,7 @@ public class LinkedList<E>
     Node<E> node(int index) {
         // assert isElementIndex(index);
 
+        // 判断index是小于 size/2,还是大于size/2,从而决定是从头结点开始遍历，还是从尾结点开始遍历
         if (index < (size >> 1)) {
             Node<E> x = first;
             for (int i = 0; i < index; i++)
