@@ -26,13 +26,14 @@
 package java.util;
 
 /**
+ * 实现了Set接口，基于HashMap实现。不保证顺序，允许元素为null(因为HashMap允许key为null)
  * This class implements the <tt>Set</tt> interface, backed by a hash table
  * (actually a <tt>HashMap</tt> instance).  It makes no guarantees as to the
  * iteration order of the set; in particular, it does not guarantee that the
  * order will remain constant over time.  This class permits the <tt>null</tt>
  * element.
  *
- * <p>This class offers constant time performance for the basic operations
+ * <p>This class offers constant time performance(恒定的时间性能) for the basic operations
  * (<tt>add</tt>, <tt>remove</tt>, <tt>contains</tt> and <tt>size</tt>),
  * assuming the hash function disperses the elements properly among the
  * buckets.  Iterating over this set requires time proportional to the sum of
@@ -40,19 +41,24 @@ package java.util;
  * "capacity" of the backing <tt>HashMap</tt> instance (the number of
  * buckets).  Thus, it's very important not to set the initial capacity too
  * high (or the load factor too low) if iteration performance is important.
+ * 如果迭代性能很重要的话，不要把初始容量定的太高，或者加载因子定的太低
  *
+ * 非同步，需要外部同步
  * <p><strong>Note that this implementation is not synchronized.</strong>
  * If multiple threads access a hash set concurrently, and at least one of
  * the threads modifies the set, it <i>must</i> be synchronized externally.
  * This is typically accomplished by synchronizing on some object that
- * naturally encapsulates the set.
+ * naturally encapsulates the set(自然封装该set).
  *
+ * 如果不存在这样的对象（上面提到的自然封装该set的对象）,可以使用下面的方式进行
+ * “包装”该set
  * If no such object exists, the set should be "wrapped" using the
  * {@link Collections#synchronizedSet Collections.synchronizedSet}
  * method.  This is best done at creation time, to prevent accidental
  * unsynchronized access to the set:<pre>
  *   Set s = Collections.synchronizedSet(new HashSet(...));</pre>
  *
+ * fail-fast机制
  * <p>The iterators returned by this class's <tt>iterator</tt> method are
  * <i>fail-fast</i>: if the set is modified at any time after the iterator is
  * created, in any way except through the iterator's own <tt>remove</tt>
@@ -90,9 +96,12 @@ public class HashSet<E>
 {
     static final long serialVersionUID = -5024744406713321676L;
 
+    // 实际用来存放元素的map
     private transient HashMap<E,Object> map;
 
     // Dummy value to associate with an Object in the backing Map
+    // HashSet只用到了HashMap的key，此处的PRESENT用来充当HashMap的value
+    // 既然没有意义，为什么不用null? 应该是为了避免出现空指针这样的异常
     private static final Object PRESENT = new Object();
 
     /**
@@ -162,7 +171,7 @@ public class HashSet<E>
     /**
      * Returns an iterator over the elements in this set.  The elements
      * are returned in no particular order.
-     *
+     * 遍历HashSet实际上是遍历HashMap中的key
      * @return an Iterator over the elements in this set
      * @see ConcurrentModificationException
      */
@@ -230,6 +239,7 @@ public class HashSet<E>
      * @return <tt>true</tt> if the set contained the specified element
      */
     public boolean remove(Object o) {
+        // map中所有key对应的value都是PRESENT
         return map.remove(o)==PRESENT;
     }
 
