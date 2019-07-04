@@ -466,6 +466,7 @@ public class HashMap<K,V>
             if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
                 V oldValue = e.value;
                 e.value = value;
+                // 重排序，HashMap自身为空实现，需要子类进行具体实现，比如LinkedHashMap实现了该方法(recordAccess)
                 e.recordAccess(this);
                 return oldValue;
             }
@@ -670,6 +671,7 @@ public class HashMap<K,V>
                     table[i] = next;
                 else
                     prev.next = next;
+                // LinkedHashMap重写了次方法
                 e.recordRemoval(this);
                 return e;
             }

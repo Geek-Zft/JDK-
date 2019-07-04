@@ -90,6 +90,7 @@ import java.io.*;
  * than for <tt>HashMap</tt>, as iteration times for this class are unaffected
  * by capacity.
  *
+ * 线程不安全的
  * <p><strong>Note that this implementation is not synchronized.</strong>
  * If multiple threads access a linked hash map concurrently, and at least
  * one of the threads modifies the map structurally, it <em>must</em> be
@@ -142,6 +143,11 @@ import java.io.*;
  * @see     TreeMap
  * @see     Hashtable
  * @since   1.4
+ *
+ *
+ * HashMap + 双向循环链表
+ * LinkedHashMap是有序的，通过双向链表来保证的有序
+ * 参考 https://www.jianshu.com/p/8f4f58b4b8ab
  */
 
 public class LinkedHashMap<K,V>
@@ -153,12 +159,14 @@ public class LinkedHashMap<K,V>
 
     /**
      * The head of the doubly linked list.
+     * 双向循环链表的头结点
      */
     private transient Entry<K,V> header;
 
     /**
      * The iteration ordering method for this linked hash map: <tt>true</tt>
      * for access-order, <tt>false</tt> for insertion-order.
+     * 排序规则，true按访问顺序，false按插入顺序
      *
      * @serial
      */
@@ -175,7 +183,7 @@ public class LinkedHashMap<K,V>
      */
     public LinkedHashMap(int initialCapacity, float loadFactor) {
         super(initialCapacity, loadFactor);
-        accessOrder = false;
+        accessOrder = false; // 默认按照插入顺序排序
     }
 
     /**
@@ -216,7 +224,7 @@ public class LinkedHashMap<K,V>
     /**
      * Constructs an empty <tt>LinkedHashMap</tt> instance with the
      * specified initial capacity, load factor and ordering mode.
-     *
+     * 可以指定排序规则的构造方法
      * @param  initialCapacity the initial capacity
      * @param  loadFactor      the load factor
      * @param  accessOrder     the ordering mode - <tt>true</tt> for
@@ -235,21 +243,26 @@ public class LinkedHashMap<K,V>
      * Called by superclass constructors and pseudoconstructors (clone,
      * readObject) before any entries are inserted into the map.  Initializes
      * the chain.
+     * 重写父类的init方法，初始化一个空的双向循环链表
      */
     @Override
     void init() {
+        // header不包含任何的数据
         header = new Entry<>(-1, null, null, null);
+        // 只有头结点的双向链表
         header.before = header.after = header;
     }
 
     /**
+     * 重写父类transfer，会被resize方法调用
      * Transfers all entries to new table array.  This method is called
-     * by superclass resize.  It is overridden for performance, as it is
+     * by superclass resize.  It is overridden for performance(为了性能), as it is
      * faster to iterate using our linked list.
      */
     @Override
     void transfer(HashMap.Entry[] newTable, boolean rehash) {
         int newCapacity = newTable.length;
+        // 遍历双向链表, 只需遍历N次(N为元素个数),HashMap的transfer需要遍历整个table
         for (Entry<K,V> e = header.after; e != header; e = e.after) {
             if (rehash)
                 e.hash = (e.key == null) ? 0 : hash(e.key);
@@ -301,6 +314,7 @@ public class LinkedHashMap<K,V>
         Entry<K,V> e = (Entry<K,V>)getEntry(key);
         if (e == null)
             return null;
+        // 如果accessOrder == true 重排序
         e.recordAccess(this);
         return e.value;
     }
@@ -329,12 +343,16 @@ public class LinkedHashMap<K,V>
          * Removes this entry from the linked list.
          */
         private void remove() {
+            // this.before.after = this.after;
+            // this.after.before = this.before;
+            // this 代表要删除的元素
             before.after = after;
             after.before = before;
         }
 
         /**
          * Inserts this entry before the specified existing entry in the list.
+         * 还是讲究先连后断, 参考LinkedList的插入
          */
         private void addBefore(Entry<K,V> existingEntry) {
             after  = existingEntry;
@@ -344,6 +362,10 @@ public class LinkedHashMap<K,V>
         }
 
         /**
+         * 注意这里所说的顺序只是双向链表的顺序，跟HashMap的存储没有关系
+         * 只要先前存在的一个entry的value被Map.get读取或者Map.set修改，父类就会
+         * 调用此方法。
+         * 如果Map是按顺序访问的，将entry放到list最后。否则什么都不做
          * This method is invoked by the superclass whenever the value
          * of a pre-existing entry is read by Map.get or modified by Map.set.
          * If the enclosing Map is access-ordered, it moves the entry
@@ -353,7 +375,9 @@ public class LinkedHashMap<K,V>
             LinkedHashMap<K,V> lm = (LinkedHashMap<K,V>)m;
             if (lm.accessOrder) {
                 lm.modCount++;
+                // 从双向链表中移除
                 remove();
+                // 再加入到双向链表的尾部
                 addBefore(lm.header);
             }
         }
@@ -364,6 +388,7 @@ public class LinkedHashMap<K,V>
     }
 
     private abstract class LinkedHashIterator<T> implements Iterator<T> {
+        // 默认下一个返回的是双向链表表头的下一个元素
         Entry<K,V> nextEntry    = header.after;
         Entry<K,V> lastReturned = null;
 
@@ -395,8 +420,11 @@ public class LinkedHashMap<K,V>
             if (nextEntry == header)
                 throw new NoSuchElementException();
 
+            // 应该返回的entry
             Entry<K,V> e = lastReturned = nextEntry;
+            // 下一个要返回的entry
             nextEntry = e.after;
+            // 返回当前应该返回的entry
             return e;
         }
     }
@@ -424,6 +452,7 @@ public class LinkedHashMap<K,V>
      * removes the eldest entry if appropriate.
      */
     void addEntry(int hash, K key, V value, int bucketIndex) {
+        // 父类的addEntry调用了createEntry,会调用本地重写过的createEntry
         super.addEntry(hash, key, value, bucketIndex);
 
         // Remove eldest entry if instructed
