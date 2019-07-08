@@ -8,3 +8,4 @@
 - [x] LinkedList源码学习
 - [x] HashSet源码学习
 - [x] LinkedHashMap源码学习
+- [x] LinkedHashSet源码学习
