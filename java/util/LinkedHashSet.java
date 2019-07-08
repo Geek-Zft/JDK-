@@ -113,6 +113,8 @@ package java.util;
  * @see     TreeSet
  * @see     Hashtable
  * @since   1.4
+ *
+ * 实际内部存储数据的是一个LinkedHashMap,默认排序顺序是按插入顺序
  */
 
 public class LinkedHashSet<E>
@@ -151,6 +153,10 @@ public class LinkedHashSet<E>
      * capacity (16) and load factor (0.75).
      */
     public LinkedHashSet() {
+
+//        HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+//            map = new LinkedHashMap<>(initialCapacity, loadFactor);
+//        }
         super(16, .75f, true);
     }
 
